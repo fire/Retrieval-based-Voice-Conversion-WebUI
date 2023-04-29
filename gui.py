@@ -520,22 +520,26 @@ class GUI:
         for hostapi in hostapis:
             for device_idx in hostapi["devices"]:
                 devices[device_idx]["hostapi_name"] = hostapi["name"]
-        input_devices = [
-            f"{d['name']} ({d['hostapi_name']})"
-            for d in devices
-            if d["max_input_channels"] > 0
-        ]
-        output_devices = [
-            f"{d['name']} ({d['hostapi_name']})"
-            for d in devices
-            if d["max_output_channels"] > 0
-        ]
-        input_devices_indices = [
-            d["index"] for d in devices if d["max_input_channels"] > 0
-        ]
-        output_devices_indices = [
-            d["index"] for d in devices if d["max_output_channels"] > 0
-        ]
+        input_devices = []
+        for d in devices:
+            if d["max_input_channels"] > 0:
+                input_devices.append(f"{d['name']} ({d['hostapi_name']})")
+        output_devices = []
+        for d in devices:
+            if d["max_output_channels"] > 0:
+                output_devices.append(f"{d['name']} ({d['hostapi_name']})")
+        input_devices_indices = []
+        for d in devices:
+            if d["max_input_channels"] > 0:
+                if "index" in d:
+                    input_devices_indices.append(d["index"])
+                else:
+                    input_devices_indices.append([])
+        output_devices_indices = []
+        for d in devices:
+            if d["max_output_channels"] > 0:
+                if "index" in d:
+                    output_devices_indices.append(d["index"])
         return (
             input_devices,
             output_devices,
@@ -551,10 +555,12 @@ class GUI:
             input_device_indices,
             output_device_indices,
         ) = self.get_devices()
-        sd.default.device[0] = input_device_indices[input_devices.index(input_device)]
-        sd.default.device[1] = output_device_indices[
-            output_devices.index(output_device)
-        ]
+        input_device_index = input_devices.index(input_device)
+        if input_device_index in input_device_indices:
+            sd.default.device[0] = input_device_indices[input_device_index]
+        output_device_index = output_devices.index(output_device)
+        if output_device_index in output_device_indices:
+            sd.default.device[1] = output_device_indices[output_device_index]
         print("input device:" + str(sd.default.device[0]) + ":" + str(input_device))
         print("output device:" + str(sd.default.device[1]) + ":" + str(output_device))
 
